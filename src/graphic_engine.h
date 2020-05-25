@@ -1,6 +1,8 @@
 #ifndef GRAPHIC_ENGINE_H
 #define GRAPHIC_ENGINE_H
 
+#include <math.h>
+
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 
@@ -34,12 +36,15 @@ int move_camera_mode;
 sf::Vector2i mouse_position;
 
 bool mouse_left;
+bool show_grid; 
 
 void handle_camera_events(sf::Event event);
-void render_grid(int grid_w, int grid_h, int thickness = 2);
+void render_grid(int thickness = 2);
 void camera_translate(float dx, float dy);
 void camera_translate(const sf::Vector2f& vec);
 void camera_zoom(float zoom_factor);
+void camera_center(const sf::Vector2f& where);
+sf::Vector2f get_camera_view_origin();
 
 bool point_in_camera_view(const sf::Vector2f& point);
 

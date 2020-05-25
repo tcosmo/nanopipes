@@ -3,7 +3,7 @@
 
 int main()
 {
-    GraphicEngine engine(800,600);
+    GraphicEngine engine(800*1.5,600*1.5);
 
     engine.run();
 }

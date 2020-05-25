@@ -11,4 +11,6 @@
 
 #define PROG_NAME "Nanopipes"
 
+#define pritnf printf
+
 #endif

@@ -6,7 +6,7 @@ GraphicEngine::GraphicEngine(int screen_w, int screen_h)
     camera = window.getDefaultView();
     window.setView(camera);
     move_camera_mode = 0;
-
+    show_grid = 1;
     mouse_left = false;
 }
 
@@ -14,23 +14,33 @@ GraphicEngine::~GraphicEngine()
 {
 }
 
-void GraphicEngine::render_grid(int grid_w, int grid_h, int thickness)
+sf::Vector2f GraphicEngine::get_camera_view_origin()
 {
-    sf::RectangleShape carre(sf::Vector2f(CELL_W, CELL_H));
-    carre.setFillColor(sf::Color::Black);
-    window.draw(carre);
-    for( int row = 0 ; row < grid_h ; row += 1 ) {
-        sf::RectangleShape line(sf::Vector2f(grid_h*CELL_H, thickness));
-        line.setFillColor(GRID_COLOR);
-        line.setPosition(0,row*CELL_H);
-        window.draw(line);
+    sf::Vector2f half_size = {camera.getSize().x/2,camera.getSize().y/2};
+    return camera.getCenter()-half_size;
+}
+
+void GraphicEngine::render_grid(int thickness)
+{    
+    auto view_origin = get_camera_view_origin();
+    int col_start = view_origin.x/CELL_W;
+    int col_end = (view_origin.x+camera.getSize().x)/CELL_W;
+    int line_start = view_origin.y/CELL_H;
+    int line_end = (view_origin.y+camera.getSize().y)/CELL_H;
+
+    sf::RectangleShape col(sf::Vector2f(camera.getSize().y, thickness));
+    col.rotate(90);
+    col.setFillColor(GRID_COLOR);
+
+    for( int i_col = col_start ; i_col <= col_end ; i_col += 1 ) {
+        col.setPosition({CELL_W*i_col, view_origin.y});
+        window.draw(col);
     }
 
-    for( int col = 0 ; col < grid_w ; col += 1 ) {
-        sf::RectangleShape line(sf::Vector2f(grid_w*CELL_W, thickness));
-        line.setFillColor(GRID_COLOR);
-        line.setPosition(col*CELL_W,0);
-        line.rotate(90);
+    sf::RectangleShape line(sf::Vector2f(camera.getSize().x, thickness));
+    line.setFillColor(GRID_COLOR);
+    for( int i_line = line_start ; i_line <= line_end ; i_line += 1 ) {
+        line.setPosition({view_origin.x,CELL_H*i_line});
         window.draw(line);
     }
 }
@@ -52,6 +62,12 @@ void GraphicEngine::camera_zoom(float zoom_factor)
     window.setView(camera);
 }
 
+void GraphicEngine::camera_center(const sf::Vector2f& where)
+{
+    camera.setCenter(where);
+    window.setView(camera);
+}
+
 bool control_pressed()
 {
     return sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || 
@@ -61,8 +77,7 @@ bool control_pressed()
 bool GraphicEngine::point_in_camera_view(const sf::Vector2f& point)
 {
     /* Warning: that supposes that the view is not rotated */
-    sf::Vector2f half_size = {camera.getSize().x/2, camera.getSize().y/2};
-    return sf::FloatRect({camera.getCenter()-half_size, 
+    return sf::FloatRect({get_camera_view_origin(), 
                           camera.getSize()}).contains(point);
 }
 
@@ -147,6 +162,14 @@ void GraphicEngine::run()
                         window.close();
                     break;
 
+                    case sf::Keyboard::C:
+                        camera_center({0,0});
+                    break;
+
+                    case sf::Keyboard::G:
+                        show_grid = !show_grid;
+                    break;
+
                     case sf::Keyboard::A:
                         sf::Vector2f worldPos = window.mapPixelToCoords({0,0});
                         printf("%lf %lf\n", worldPos.x, worldPos.y);
@@ -160,8 +183,13 @@ void GraphicEngine::run()
         }
 
         window.clear(BACKGROUND_COLOR);
-        render_grid(200,200);
 
+        sf::RectangleShape carre(sf::Vector2f(CELL_W, CELL_H));
+        carre.setFillColor(sf::Color::Black);
+        window.draw(carre);
+
+        if( show_grid )
+            render_grid();
         window.display();
     }
 }
