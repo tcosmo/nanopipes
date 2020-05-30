@@ -43,15 +43,6 @@ struct MicroIteration {
     int macro_iteration;
 };
 
-struct compare_world_positions 
-{
-    bool operator()(const sf::Vector2<int>& a, const sf::Vector2<int>& b) const {
-        if(a.x == b.x)
-            return a.y < b.y;
-        return a.x < b.x;
-    }
-};
-
 class World {
 
 public:

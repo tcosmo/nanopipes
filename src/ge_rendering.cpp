@@ -1,6 +1,6 @@
 #include "graphic_engine.h"
 
-const sf::Color CELLS_COLOR[4] = {COLOR_DARKER_GREEN, sf::Color::Magenta, sf::Color::Black, sf::Color::Blue};
+const sf::Color GraphicEngine::CELLS_COLOR[4] = {COLOR_DARKER_GREEN, sf::Color::Magenta, sf::Color::Black, sf::Color::Blue};
 
 void GraphicEngine::draw_cell_outline_fill(const sf::Vector2i& cell_position, 
                                            const sf::Color& outline, const sf::Color& fill)
@@ -49,7 +49,7 @@ void GraphicEngine::render_grid()
 sf::Color GraphicEngine::color_of_cell(const Cell& cell)
 {
     assert(cell.status() == DEFINED);
-    return CELLS_COLOR[cell.to_index()];
+    return GraphicEngine::CELLS_COLOR[cell.to_index()];
 }
 
 void GraphicEngine::render_cell(const sf::Vector2i& cell_pos, const Cell& cell)
@@ -96,4 +96,11 @@ void GraphicEngine::render_world()
         const Cell& cell = pos_and_cell.second;
         render_cell(cell_pos, cell);
     }
+}
+
+void GraphicEngine::render_colored_selectors()
+{
+    for( const auto& color_pos: colored_selectors )
+        for( const auto& pos: colored_selectors[color_pos.first] )
+            draw_cell_outline_fill(pos, color_pos.first, sf::Color::Transparent);
 }

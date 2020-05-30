@@ -6,7 +6,13 @@ bool GraphicEngine::control_pressed()
            sf::Keyboard::isKeyPressed(sf::Keyboard::RControl);
 }
 
-void GraphicEngine::handle_insert_events(sf::Event event)
+bool GraphicEngine::shift_pressed()
+{
+    return sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || 
+           sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
+}
+
+void GraphicEngine::handle_insert_events(const sf::Event& event)
 {
     if( world.mode == LINE_MODE )
         if(event.type == sf::Event::KeyPressed) {
@@ -31,9 +37,8 @@ void GraphicEngine::handle_insert_events(sf::Event event)
         }
 }
 
-void GraphicEngine::handle_camera_events(sf::Event event)
+void GraphicEngine::handle_camera_events(const sf::Event& event)
 {
-
     if(event.type == sf::Event::KeyPressed) {
         switch(event.key.code) {
             case sf::Keyboard::Up:
@@ -59,9 +64,9 @@ void GraphicEngine::handle_camera_events(sf::Event event)
     }
 
     if(event.type == sf::Event::MouseLeft)
-        mouse_left = true;
+        camera_mouse_left = true;
     if(event.type == sf::Event::MouseEntered)
-        mouse_left = false;
+        camera_mouse_left = false;
 
     if (event.type == sf::Event::MouseWheelScrolled)
         if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
@@ -76,15 +81,15 @@ void GraphicEngine::handle_camera_events(sf::Event event)
     if(event.type == sf::Event::MouseButtonPressed)
         if( (event.mouseButton.button == sf::Mouse::Middle) ) {
             move_camera_mode = true;
-            mouse_position = sf::Mouse::getPosition(window); 
+            camera_mouse_position = sf::Mouse::getPosition(window); 
         }
 
     if(event.type == sf::Event::MouseMoved) {
         if(move_camera_mode) {
             auto coordMouseMove = window.mapPixelToCoords({event.mouseMove.x, event.mouseMove.y});
-            auto coordMouse = window.mapPixelToCoords(mouse_position);
+            auto coordMouse = window.mapPixelToCoords(camera_mouse_position);
             camera_translate(coordMouse-coordMouseMove);
-            mouse_position = sf::Mouse::getPosition(window);              
+            camera_mouse_position = sf::Mouse::getPosition(window);              
         }
     }
 
@@ -92,9 +97,39 @@ void GraphicEngine::handle_camera_events(sf::Event event)
         if(event.mouseButton.button == sf::Mouse::Middle) {
             move_camera_mode = false;
             
-            if(mouse_left)
+            if(camera_mouse_left)
                 sf::Mouse::setPosition({static_cast<int>(window.getSize().x/2),
                                         static_cast<int>(window.getSize().y/2)}, 
                                         window);
         }
+}
+
+void GraphicEngine::handle_selectors_events(const sf::Event& event)
+{
+    if(event.type == sf::Event::MouseButtonPressed) {
+        if( (event.mouseButton.button == sf::Mouse::Left) ) {
+            sf::Vector2i cliked_cell_pos = map_coords_to_world_coords(
+                        window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+            colored_selectors_toggle(cliked_cell_pos);
+        }
+        if( (event.mouseButton.button == sf::Mouse::Right) ) {
+            sf::Vector2i cliked_cell_pos = map_coords_to_world_coords(
+                        window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+            colored_selectors_clear(cliked_cell_pos);
+        }
+    }
+
+    if(event.type == sf::Event::KeyPressed) {
+        switch(event.key.code) {
+            case sf::Keyboard::Right:
+                current_selector_color += 1;
+                current_selector_color %= COLORED_SELECTORS_WHEEL_SIZE;
+            break;
+
+            case sf::Keyboard::Left:
+                current_selector_color -= 1;
+                current_selector_color %= COLORED_SELECTORS_WHEEL_SIZE;
+            break;
+        }
+    }
 }

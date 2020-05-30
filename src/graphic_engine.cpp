@@ -1,25 +1,42 @@
 #include "graphic_engine.h"
 
+const int GraphicEngine::COLORED_SELECTORS_WHEEL_SIZE = 5;
+const sf::Color GraphicEngine::COLORED_SELECTORS_WHEEL[GraphicEngine::COLORED_SELECTORS_WHEEL_SIZE] = {
+    sf::Color::Magenta,
+    sf::Color(0x845FC2),
+    sf::Color(0x2C73D2),
+    sf::Color(0xFF9671),
+    sf::Color(0xC34A36)
+};
+
 GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(world)
 {
     window.create(sf::VideoMode(screen_w, screen_h), PROG_NAME);
+    assert(default_font.loadFromFile("arial.ttf"));
+
     camera = window.getDefaultView();
+    camera_mouse_left = false;
     window.setView(camera);
-    move_camera_mode = false;
-    show_grid = true;
-    mouse_left = false;
-    insert_mode = world.cells_on_edge.empty();
+
     cursor_position = {0,0};
     cursor_color = DEFAULT_CURSOR_COLOR;
-    assert(default_font.loadFromFile("arial.ttf"));
+
+    move_camera_mode = false;
+    insert_mode = world.cells_on_edge.empty();
+    
+    show_grid = true;
     cell_color_mode = false;
+
+    current_selector_color = 0;
+    for( int i_color = 0 ; i_color < COLORED_SELECTORS_WHEEL_SIZE ; i_color += 1)
+        colored_selectors[COLORED_SELECTORS_WHEEL[i_color]] = Poset({});
 }
 
 GraphicEngine::~GraphicEngine()
 {
 }
 
-void GraphicEngine::move_cursor(sf::Vector2i pos_delta)
+void GraphicEngine::move_cursor(const sf::Vector2i& pos_delta)
 {
     cursor_position += pos_delta;
 }
@@ -32,21 +49,33 @@ sf::Vector2f GraphicEngine::map_world_coords_to_coords(const sf::Vector2i& world
 
 sf::Vector2i GraphicEngine::map_coords_to_world_coords(const sf::Vector2f& coords)
 {
-    return sf::Vector2i({static_cast<int>(coords.x/CELL_W),
-                         static_cast<int>(coords.y/CELL_H)});
+    int sign_x = (coords.x < 0) ? -1*CELL_W : 0;
+    int sign_y = (coords.y < 0) ? -1*CELL_H : 0;
+    return sf::Vector2i({static_cast<int>((coords.x+sign_x)/CELL_W),
+                         static_cast<int>((coords.y+sign_y)/CELL_H)});
+}
+
+void GraphicEngine::colored_selectors_toggle(const sf::Vector2i& world_coord)
+{
+    const sf::Color& current_color = COLORED_SELECTORS_WHEEL[current_selector_color];
+    auto find_iterator = colored_selectors[current_color].find(world_coord);
+    if( find_iterator  == colored_selectors[current_color].end() )
+        colored_selectors[current_color].insert(world_coord);
+    else
+        colored_selectors[current_color].erase(find_iterator);
+}
+
+void GraphicEngine::colored_selectors_clear(const sf::Vector2i& world_coord)
+{
+    for(auto& color_poset: colored_selectors )
+        if( color_poset.second.find(world_coord) != color_poset.second.end() )
+            color_poset.second.clear();
 }
 
 void GraphicEngine::run()
 {
     camera_zoom(3);
     camera_center({-5*CELL_W,0});
-
-    // world.cells[{0,0}] = {0,0};
-    // world.cells[{0,1}] = {0,1};
-    // world.cells[{1,0}] = {1,0};
-    // world.cells[{1,1}] = {1,1};
-    // world.cells[{-1,0}] = {1};
-    // world.cells[{-2,0}] = {UNDEFINED,1};
 
     while(window.isOpen())
     {
@@ -57,6 +86,9 @@ void GraphicEngine::run()
 
             if(insert_mode)
                 handle_insert_events(event);
+
+            if(shift_pressed())
+                handle_selectors_events(event);
 
             if(event.type == sf::Event::KeyPressed) {
                 switch(event.key.code) {
@@ -124,6 +156,7 @@ void GraphicEngine::run()
             render_cursor();
 
         render_world();
+        render_colored_selectors();
 
         window.display();
     }
