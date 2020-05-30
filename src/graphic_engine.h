@@ -23,6 +23,7 @@
 #define BACKGROUND_COLOR_HALF_DEFINED sf::Color(0.4*255, 0.4*255, 0.4*255)
 #define BACKGROUND_COLOR_DEFINED sf::Color(0.6*255, 0.6*255, 0.6*255)
 #define COLOR_SPECIAL_CARRY sf::Color(0.4*255, 0.1*255, 0.1*255)
+#define COLOR_DARKER_GREEN sf::Color(0.2*255, 0.9*255, 0.2*255)
 
 #define GRID_THICKNESS 2
 
@@ -56,33 +57,33 @@ bool insert_mode;
 
 bool cell_color_mode;
 
+// Events
 void handle_camera_events(sf::Event event);
 void handle_insert_events(sf::Event event);
+bool control_pressed();
 
+// Camera
 void camera_translate(float dx, float dy);
 void camera_translate(const sf::Vector2f& vec);
 void camera_zoom(float zoom_factor);
 void camera_center(const sf::Vector2f& where);
 sf::Vector2f get_camera_view_origin();
 bool point_in_camera_view(const sf::Vector2f& point);
+sf::Vector2i last_visible_cell(); // World coordinates of the left rightmost bottom cell
 
+// Rendering
 void render_grid();
 void render_cursor();
 void render_world();
 void render_cell(const sf::Vector2i& cell_pos, const Cell& cell);
-
-// World coords are cells position
-sf::Vector2f map_world_coords_to_coords(const sf::Vector2i& world_coords);
-sf::Vector2i map_coords_to_world_coords(const sf::Vector2f& coords);
-
-void move_cursor(sf::Vector2i pos_delta);
-
 void draw_cell_outline_fill(const sf::Vector2i& cell_position, 
                             const sf::Color& outline, const sf::Color& fill);
-
-sf::Vector2i last_visible_cell(); // World coordinates of the left rightmost bottom cell
-
 sf::Color color_of_cell(const Cell& cell);
+
+// Routines
+sf::Vector2f map_world_coords_to_coords(const sf::Vector2i& world_coords); // World coords are cells position
+sf::Vector2i map_coords_to_world_coords(const sf::Vector2f& coords);
+void move_cursor(sf::Vector2i pos_delta);
 
 };
 
