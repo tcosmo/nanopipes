@@ -57,8 +57,10 @@ void GraphicEngine::render_cell(const sf::Vector2i& cell_pos, const Cell& cell)
     if( cell.status() == UNDEFINED ) return;
 
     if( cell.status() == DEFINED ) {
-        if(!cell_color_mode) draw_cell_outline_fill(cell_pos, sf::Color::Transparent, BACKGROUND_COLOR_DEFINED);
-        else draw_cell_outline_fill(cell_pos, color_of_cell(cell), color_of_cell(cell));
+        if(!cell_color_mode) 
+            draw_cell_outline_fill(cell_pos, sf::Color::Transparent, BACKGROUND_COLOR_DEFINED);
+        else 
+            draw_cell_outline_fill(cell_pos, color_of_cell(cell), color_of_cell(cell));
     }
     else
         draw_cell_outline_fill(cell_pos, sf::Color::Transparent, BACKGROUND_COLOR_HALF_DEFINED);

@@ -68,6 +68,8 @@ private:
     void next_micro_line(); // micro Collatz iteration in line mode
     bool cell_exists(const sf::Vector2i& pos);
     void assert_cell_exists(const sf::Vector2i& pos);
+
+    std::string record_initial_cells_input;
 };
 
 #endif

@@ -17,6 +17,7 @@ void World::set_mode(WorldMode p_mode)
 
 void World::set_initial_cells(const std::string& initial_cells_input)
 {
+    record_initial_cells_input = initial_cells_input;
     if(mode == LINE_MODE) {
         sf::Vector2i pos = {-1,0};
 
@@ -136,6 +137,11 @@ void World::reset()
 {
     cells.clear();
     cells_on_edge.clear();
+    nb_macro_iterations = 0;
+    if( record_initial_cells_input.size() != 0 ) {
+        set_initial_cells(record_initial_cells_input);
+        bootstrap_Collatz();
+    }
 }
 
 void World::bootstrap_Collatz() 
