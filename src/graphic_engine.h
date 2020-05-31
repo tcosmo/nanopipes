@@ -104,6 +104,7 @@ void move_cursor(const sf::Vector2i& pos_delta);
 // Colored selectors
 void colored_selectors_toggle(const sf::Vector2i& world_coord);
 void colored_selectors_clear(const sf::Vector2i& world_coord);
+void colored_selectors_clear_all();
 
 };
 

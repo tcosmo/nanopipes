@@ -95,6 +95,13 @@ void GraphicEngine::render_world()
 {
     for( const auto& pos_and_cell : world.cells ) {
         const sf::Vector2i& cell_pos = pos_and_cell.first;
+
+        // Be sparse and do not render out of sight cells
+        // Particularly useful when coming from very un zoomed to very zoomed
+        // SFML seems to struggle when having to render stuff far out of sight.
+        if(world.mode == LINE_MODE && cell_pos.y > last_visible_cell().y)
+            continue;
+
         const Cell& cell = pos_and_cell.second;
         render_cell(cell_pos, cell);
     }

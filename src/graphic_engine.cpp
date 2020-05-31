@@ -72,6 +72,12 @@ void GraphicEngine::colored_selectors_clear(const sf::Vector2i& world_coord)
             color_poset.second.clear();
 }
 
+void GraphicEngine::colored_selectors_clear_all()
+{
+    for(auto& color_poset: colored_selectors )
+        color_poset.second.clear();
+}
+
 void GraphicEngine::run()
 {
     camera_zoom(3);
@@ -130,13 +136,11 @@ void GraphicEngine::run()
                     case sf::Keyboard::R:
                         world.reset();
                         insert_mode = world.cells_on_edge.empty();
+                        colored_selectors_clear_all();
                     break;
 
                     case sf::Keyboard::A:
-                        sf::Vector2f worldPos = window.mapPixelToCoords({0,0});
-                        printf("%lf %lf\n", worldPos.x, worldPos.y);
-                        worldPos = window.mapPixelToCoords({10,0});
-                        printf("%lf %lf\n", worldPos.x, worldPos.y);
+                        printf("Macro it: %d\n", world.nb_macro_iterations);
                     break;
                 }
             }

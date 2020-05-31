@@ -99,7 +99,7 @@ void World::next_micro_line()
     int front_macro_it = cells_on_edge.front().macro_iteration;
     nb_macro_iterations = front_macro_it;
 
-    printf("%d %d %d\n", front_pos.x, front_pos.y, front_macro_it);
+    //printf("%d %d %d\n", front_pos.x, front_pos.y, front_macro_it);
 
     assert_cell_exists(front_pos);
 
@@ -123,18 +123,18 @@ void World::next_micro_line()
     if( cells[front_pos+SOUTH].bit == 1 )  line_mode_macro_iteration_one_found.second = true;
 
     if( line_mode_macro_iteration_one_found.second ) {
-        printf("PUSH BACK %d %d %d\n", (front_pos+SOUTH).x, (front_pos+SOUTH).y, front_macro_it+1);
+        //printf("PUSH BACK %d %d %d\n", (front_pos+SOUTH).x, (front_pos+SOUTH).y, front_macro_it+1);
         cells_on_edge.push_back({front_pos+SOUTH,front_macro_it+1});
     }
 
-    printf("POP FRONT\n");
+    //printf("POP FRONT\n");
     cells_on_edge.pop_front();
 
         // Extending the space if current macro iteration ends with \bar 0, 1 or \bar 1
     if( !cell_exists(front_pos + WEST) && (cells[front_pos].bit + cells[front_pos].carry) >= 1 ) {
         cells[front_pos + WEST] = {0,0};
         cells_on_edge.push_front({front_pos+WEST,front_macro_it});
-        printf("PUSH FRONT\n");
+        //printf("PUSH FRONT\n");
     }
 }
 
