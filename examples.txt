@@ -1,2 +1,2 @@
-./nanopipes.out -l 1110011011
-./nanopipes.out -c 1021012
+./nanopipes.out -line 1110011011
+./nanopipes.out -col 1021012
