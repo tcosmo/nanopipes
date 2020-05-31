@@ -63,11 +63,15 @@ public:
     void next_micro(); // next micro iteration
     int nb_macro_iterations;
 
+    std::pair<int,bool> line_mode_macro_iteration_one_found;
+
 private:
     void bootstrap_Collatz_line();
     void next_micro_line(); // micro Collatz iteration in line mode
     bool cell_exists(const sf::Vector2i& pos);
     void assert_cell_exists(const sf::Vector2i& pos);
+    bool cell_defined(const sf::Vector2i& pos);
+    void assert_cell_defined(const sf::Vector2i& pos);
 
     std::string record_initial_cells_input;
 };

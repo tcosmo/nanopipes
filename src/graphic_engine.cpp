@@ -129,6 +129,7 @@ void GraphicEngine::run()
 
                     case sf::Keyboard::R:
                         world.reset();
+                        insert_mode = world.cells_on_edge.empty();
                     break;
 
                     case sf::Keyboard::A:

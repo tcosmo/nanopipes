@@ -49,6 +49,7 @@ void World::bootstrap_Collatz_line()
             cells_on_edge.push_back({pos,0});
         pos.x -= 1;
     }
+    line_mode_macro_iteration_one_found = std::make_pair(0,false);
 }
 
 void World::next_micro()
@@ -67,6 +68,16 @@ void World::assert_cell_exists(const sf::Vector2i& pos)
     assert(cell_exists(pos));
 }
 
+bool World::cell_defined(const sf::Vector2i& pos)
+{
+    return cell_exists(pos) && cells[pos].status() == DEFINED;
+}
+
+void World::assert_cell_defined(const sf::Vector2i &pos)
+{
+    assert(cell_defined(pos));
+}
+
 int deduce_south_bit(Cell me, Cell east)
 {
     assert(me.bit != UNDEFINED && east.bit != UNDEFINED && east.carry != UNDEFINED);
@@ -81,56 +92,50 @@ int deduce_me_carry(Cell me, Cell east)
 
 void World::next_micro_line()
 {
-    if( cells_on_edge.empty() ) return;
-    MicroIteration first_cell = cells_on_edge.front();
+    if(cells_on_edge.empty())
+        return;
+       
+    sf::Vector2i front_pos = cells_on_edge.front().pos;
+    int front_macro_it = cells_on_edge.front().macro_iteration;
+    nb_macro_iterations = front_macro_it;
 
-    sf::Vector2i pos_me = first_cell.pos;
-    assert_cell_exists(pos_me);
+    printf("%d %d %d\n", front_pos.x, front_pos.y, front_macro_it);
 
-    sf::Vector2i pos_east = first_cell.pos+EAST;
-    assert_cell_exists(pos_east);
+    assert_cell_exists(front_pos);
 
-    sf::Vector2i pos_south = first_cell.pos+SOUTH;
-    cells[pos_south].bit = deduce_south_bit(cells[first_cell.pos],cells[pos_east]);
-    cells[pos_me].carry = deduce_me_carry(cells[first_cell.pos],cells[pos_east]);
-
-    MicroIteration last_cell = cells_on_edge.back();
-    bool non_zero_found = false;
-    
-    if( last_cell.macro_iteration != first_cell.macro_iteration )
-        non_zero_found = true;
-
-    if( cells[pos_south].bit == 1 && !non_zero_found) {
-        non_zero_found = true;
-        cells[pos_south+EAST] = {0,1,true};
-        sf::Vector2i south_neig = pos_south+EAST+EAST;
-        while(cell_exists(south_neig)) {
-            cells[south_neig].carry = 0;
-            south_neig += EAST;
+    if( front_macro_it != line_mode_macro_iteration_one_found.first ) {
+        assert(cells[front_pos].bit == 1 && cell_exists(front_pos+EAST) && (cells[front_pos+EAST].bit == 0));
+        cells[front_pos+EAST].carry = 1;
+        cells[front_pos+EAST].special_carry = true;
+        sf::Vector2i front_pos_east = front_pos+EAST+EAST;
+        while(cell_exists(front_pos_east)) {
+            cells[front_pos_east].carry = 0;
+            front_pos_east += EAST;
         }
+        line_mode_macro_iteration_one_found = std::make_pair(front_macro_it,false);
     }
 
+    assert_cell_defined(front_pos+EAST);
+
+    cells[front_pos].carry = deduce_me_carry(cells[front_pos],cells[front_pos+EAST]);
+    cells[front_pos+SOUTH].bit = deduce_south_bit(cells[front_pos],cells[front_pos+EAST]);
+
+    if( cells[front_pos+SOUTH].bit == 1 )  line_mode_macro_iteration_one_found.second = true;
+
+    if( line_mode_macro_iteration_one_found.second ) {
+        printf("PUSH BACK %d %d %d\n", (front_pos+SOUTH).x, (front_pos+SOUTH).y, front_macro_it+1);
+        cells_on_edge.push_back({front_pos+SOUTH,front_macro_it+1});
+    }
+
+    printf("POP FRONT\n");
     cells_on_edge.pop_front();
 
-    if( non_zero_found ) {
-        cells_on_edge.push_back({pos_south,first_cell.macro_iteration+1});
-        nb_macro_iterations = first_cell.macro_iteration+1;
+        // Extending the space if current macro iteration ends with \bar 0, 1 or \bar 1
+    if( !cell_exists(front_pos + WEST) && (cells[front_pos].bit + cells[front_pos].carry) >= 1 ) {
+        cells[front_pos + WEST] = {0,0};
+        cells_on_edge.push_front({front_pos+WEST,front_macro_it});
+        printf("PUSH FRONT\n");
     }
-
-    if( cells_on_edge.front().macro_iteration != first_cell.macro_iteration )
-        // Edge case where last element of the current line is \bar 1
-        // We need to add a \bar 0 to the west of it and 0 to the west of that
-        if( cells[pos_me].bit == 1 && cells[pos_me].carry == 1 ) {
-            cells[pos_me+WEST] = {0,1};
-            cells[pos_me+WEST+WEST] = {0,0};
-            cells_on_edge.push_front({pos_me+WEST+WEST, first_cell.macro_iteration});
-            cells_on_edge.push_front({pos_me+WEST, first_cell.macro_iteration});
-        }
-        // if 1 no carry we need to add a zero to west
-        else if( cells[pos_me].bit == 1 && cells[pos_me].carry == 0 ) {
-            cells[pos_me+WEST] = {0,0};
-            cells_on_edge.push_front({pos_me+WEST, first_cell.macro_iteration});
-        }
 }
 
 void World::reset() 
