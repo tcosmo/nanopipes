@@ -15,22 +15,79 @@ void World::set_mode(WorldMode p_mode)
     mode = p_mode;
 }
 
+void World::set_initial_cells_line_mode(const std::string& initial_cells_input)
+{
+    sf::Vector2i pos = {-1,0};
+    for( int i = initial_cells_input.size()-1 ; i >= 0 ; i-= 1 ) {
+        char c = initial_cells_input[i];
+        if( c != '0' && c != '1') {
+            printf("Line mode excepts binary input. Example: ./nanopipes -l 0010110. Abort.\n");
+            exit(1);
+        }
+        cells[pos].bit = (int)(c - '0');
+        pos.x -= 1;
+    }
+}
+
+std::vector<int> World::base3_to_3p(std::string base3)
+{
+    std::reverse(base3.begin(), base3.end());
+    std::vector<int> to_return;
+
+    bool last_seen_0 = true;
+    int i = 0;
+    for(char c : base3) {
+        switch(c) {
+            case '0':
+                if( i == 0 ) {
+                    printf("The input cannot be a multiple of 3 (last digit equals 0). Abort.\n");
+                    exit(1);
+                }
+                to_return.push_back(0);
+                last_seen_0 = true;
+                break;
+            case '1':
+                if(last_seen_0)
+                    to_return.push_back(1);
+                else
+                    to_return.push_back(2);
+                break;
+            case '2':
+                to_return.push_back(3);
+                last_seen_0 = false;
+                break;
+            default:
+                printf("Character `%c` is invalid base 3 digit. Abort.\n", c);
+                exit(1);
+                break;
+        }
+        i += 1;
+    }
+
+    std::reverse(to_return.begin(), to_return.end());
+    return to_return;
+}
+
+void World::set_initial_cells_col_mode(const std::string& initial_cells_input)
+{
+    std::vector<int> base3p = base3_to_3p(initial_cells_input);
+    sf::Vector2i pos = {0,-1};
+    for( int i = base3p.size()-1 ; i >= 0 ; i -= 1) {
+        cells[pos] = {base3p[i]/2, base3p[i]%2};
+        //Bootstraping can be done
+        cells_on_edge.push_front({pos,0});
+        pos += NORTH;
+    }
+    col_mode_last_macro_it_added = 0;
+}
+
 void World::set_initial_cells(const std::string& initial_cells_input)
 {
     record_initial_cells_input = initial_cells_input;
-    if(mode == LINE_MODE) {
-        sf::Vector2i pos = {-1,0};
-
-        for( int i = initial_cells_input.size()-1 ; i >= 0 ; i-= 1 ) {
-            char c = initial_cells_input[i];
-            if( c != '0' && c != '1') {
-                printf("Line mode excepts binary input. Example: ./nanopipes -l 0010110. Abort.\n");
-                exit(1);
-            }
-            cells[pos].bit = (int)(c - '0');
-            pos.x -= 1;
-        }
-    }
+    if(mode == LINE_MODE)
+        set_initial_cells_line_mode(initial_cells_input);
+    if(mode == COL_MODE) 
+        set_initial_cells_col_mode(initial_cells_input);
 }
 
 void World::bootstrap_Collatz_line() 
@@ -47,15 +104,19 @@ void World::bootstrap_Collatz_line()
         }
         if(non_zero_found)
             cells_on_edge.push_back({pos,0});
-        pos.x -= 1;
+        pos += WEST;
     }
     line_mode_macro_iteration_one_found = std::make_pair(0,false);
 }
 
 void World::next_micro()
 {
+    if(cells_on_edge.empty())
+        return;
     if( mode == LINE_MODE )
         next_micro_line();
+    if( mode == COL_MODE )
+        next_micro_col();
 }
 
 bool World::cell_exists(const sf::Vector2i& pos)
@@ -91,10 +152,8 @@ int deduce_me_carry(Cell me, Cell east)
 }
 
 void World::next_micro_line()
-{
-    if(cells_on_edge.empty())
-        return;
-       
+{      
+    assert(!cells_on_edge.empty());// This is checked before, see next_micro();, prevents bad calls
     sf::Vector2i front_pos = cells_on_edge.front().pos;
     int front_macro_it = cells_on_edge.front().macro_iteration;
     nb_macro_iterations = front_macro_it;
@@ -136,6 +195,39 @@ void World::next_micro_line()
         cells_on_edge.push_front({front_pos+WEST,front_macro_it});
         //printf("PUSH FRONT\n");
     }
+}
+
+void World::next_micro_col()
+{
+    assert(!cells_on_edge.empty());// This is checked before, see next_micro();, prevents bad calls
+    
+    sf::Vector2i front_pos = cells_on_edge.front().pos;
+    int front_macro_it = cells_on_edge.front().macro_iteration;
+    nb_macro_iterations = front_macro_it;
+
+    assert(!cell_exists(front_pos+WEST+SOUTH));
+    cells[front_pos+WEST+SOUTH] = {0};
+
+    if(!cell_exists(front_pos+WEST))
+        cells[front_pos+WEST] = {0,0};
+
+    cells[front_pos+WEST+SOUTH].bit = deduce_south_bit(cells[front_pos+WEST],cells[front_pos]);
+    cells[front_pos+WEST].carry = deduce_me_carry(cells[front_pos+WEST],cells[front_pos]);
+
+    if( !(col_mode_last_macro_it_added != front_macro_it+1 && cells[front_pos+WEST].to_index() == 0)) {
+        cells_on_edge.push_back({front_pos+WEST,front_macro_it+1});
+        col_mode_last_macro_it_added = front_macro_it+1;
+    }
+
+    if(!cell_exists(front_pos+SOUTH) || (!cell_exists(front_pos+SOUTH+SOUTH) && cells[front_pos+SOUTH].bit == 0)) {
+        if(cells[front_pos+WEST+SOUTH].bit == 1) {
+            cells[front_pos+SOUTH] = {0,1,true};
+            cells[front_pos+WEST+SOUTH].carry = 1;
+            cells_on_edge.push_back({front_pos+WEST+SOUTH,front_macro_it+1});
+        } else cells[front_pos+WEST+SOUTH].carry = 0;
+    }
+
+    cells_on_edge.pop_front();
 }
 
 void World::reset() 

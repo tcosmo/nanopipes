@@ -131,6 +131,9 @@ void GraphicEngine::run()
                         if(world.mode == LINE_MODE)
                             while(world.nb_macro_iterations < last_visible_cell().y)
                                 world.next_micro();
+                        if(world.mode == COL_MODE)
+                            while(world.nb_macro_iterations < abs(last_visible_cell().x))
+                                world.next_micro();
                     break;
 
                     case sf::Keyboard::R:

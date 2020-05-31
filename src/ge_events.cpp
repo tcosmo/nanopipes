@@ -35,6 +35,19 @@ void GraphicEngine::handle_insert_events(const sf::Event& event)
                 break;
             }
         }
+
+    if( world.mode == COL_MODE )
+        if(event.type == sf::Event::KeyPressed) {
+            switch(event.key.code) {
+                case sf::Keyboard::Up:
+                    move_cursor(NORTH);
+                break;
+
+                case sf::Keyboard::Down:
+                    move_cursor(SOUTH);
+                break;
+            }
+        }
 }
 
 void GraphicEngine::handle_camera_events(const sf::Event& event)

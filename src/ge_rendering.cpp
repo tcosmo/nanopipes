@@ -1,6 +1,6 @@
 #include "graphic_engine.h"
 
-const sf::Color GraphicEngine::CELLS_COLOR[4] = {COLOR_DARKER_GREEN, sf::Color::Magenta, sf::Color::Black, sf::Color::Blue};
+const sf::Color GraphicEngine::CELLS_COLOR[4] = {COLOR_DARKER_GREEN, sf::Color::Black, sf::Color::Magenta, sf::Color::Blue};
 
 void GraphicEngine::draw_cell_outline_fill(const sf::Vector2i& cell_position, 
                                            const sf::Color& outline, const sf::Color& fill)
@@ -100,6 +100,8 @@ void GraphicEngine::render_world()
         // Particularly useful when coming from very un zoomed to very zoomed
         // SFML seems to struggle when having to render stuff far out of sight.
         if(world.mode == LINE_MODE && cell_pos.y > last_visible_cell().y)
+            continue;
+        if(world.mode == COL_MODE && abs(cell_pos.x) > abs(last_visible_cell().x))
             continue;
 
         const Cell& cell = pos_and_cell.second;

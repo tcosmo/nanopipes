@@ -1,0 +1,2 @@
+./nanopipes.out -l 1110011011
+./nanopipes.out -c 1021012

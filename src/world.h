@@ -34,7 +34,7 @@ struct Cell {
         return DEFINED;
     }
     int to_index() const {
-        return 2*carry + bit;
+        return 2*bit + carry;
     }
 };
 
@@ -63,17 +63,26 @@ public:
     void next_micro(); // next micro iteration
     int nb_macro_iterations;
 
-    std::pair<int,bool> line_mode_macro_iteration_one_found;
-
+    static std::vector<int> base3_to_3p(std::string base3);
 private:
-    void bootstrap_Collatz_line();
-    void next_micro_line(); // micro Collatz iteration in line mode
+    std::string record_initial_cells_input;
+
+    // Cells routines
     bool cell_exists(const sf::Vector2i& pos);
     void assert_cell_exists(const sf::Vector2i& pos);
     bool cell_defined(const sf::Vector2i& pos);
     void assert_cell_defined(const sf::Vector2i& pos);
 
-    std::string record_initial_cells_input;
+    // Iterate line mode
+    std::pair<int,bool> line_mode_macro_iteration_one_found;
+    void set_initial_cells_line_mode(const std::string& initial_cells_input);
+    void bootstrap_Collatz_line();
+    void next_micro_line(); // micro Collatz iteration in line mode
+    
+    // Iterate col mode
+    int col_mode_last_macro_it_added;
+    void set_initial_cells_col_mode(const std::string& initial_cells_input);
+    void next_micro_col(); // micro Collatz iteration in col mode
 };
 
 #endif
