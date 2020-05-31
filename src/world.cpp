@@ -223,6 +223,7 @@ void World::next_micro_col()
         if(cells[front_pos+WEST+SOUTH].bit == 1) {
             cells[front_pos+SOUTH] = {0,1,true};
             cells[front_pos+WEST+SOUTH].carry = 1;
+            cells[front_pos+WEST+SOUTH+SOUTH] = {0,0};
             cells_on_edge.push_back({front_pos+WEST+SOUTH,front_macro_it+1});
         } else cells[front_pos+WEST+SOUTH].carry = 0;
     }

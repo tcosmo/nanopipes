@@ -12,7 +12,11 @@ enum WorldMode {
     FREE = 0,
     LINE_MODE,
     COL_MODE,
-    CYCLE_MODE
+    
+    CYCLE_COL_LAYER_MODE,
+    CYCLE_COL_BULK_MODE,
+    CYCLE_LINE_LAYER_MODE,
+    CYCLE_LINE_BULK_MODE
 };
 
 enum CellStatus {
