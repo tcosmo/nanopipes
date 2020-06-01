@@ -22,7 +22,7 @@ GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(w
     cursor_color = DEFAULT_CURSOR_COLOR;
 
     move_camera_mode = false;
-    insert_mode = world.cells_on_edge.empty();
+    insert_mode = world.cells_on_edge.empty() || (world.mode == FREE);
     
     show_grid = true;
     cell_color_mode = false;

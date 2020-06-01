@@ -2,7 +2,7 @@
 
 World::World() 
 {
-    mode = LINE_MODE;//FREE;
+    mode = FREE;
     nb_macro_iterations = 0;
 }
 

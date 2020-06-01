@@ -48,6 +48,51 @@ void GraphicEngine::handle_insert_events(const sf::Event& event)
                 break;
             }
         }
+
+    if( world.mode == FREE )
+        if(event.type == sf::Event::KeyPressed) {
+            switch(event.key.code) {
+                case sf::Keyboard::Right:
+                    move_cursor(EAST);
+                break;
+
+                case sf::Keyboard::Left:       
+                    move_cursor(WEST);
+                break;
+
+                case sf::Keyboard::Up:
+                    move_cursor(NORTH);
+                break;
+
+                case sf::Keyboard::Down:       
+                    move_cursor(SOUTH);
+                break;
+
+                case sf::Keyboard::Numpad0:
+                    world.cells[cursor_position] = {0,0};
+                break;
+
+                case sf::Keyboard::Numpad1:
+                    world.cells[cursor_position] = {0,1};
+                break;
+
+                case sf::Keyboard::Numpad2:
+                    world.cells[cursor_position] = {1,0};
+                break;
+
+                case sf::Keyboard::Numpad3:
+                    world.cells[cursor_position] = {1,1};
+                break;
+
+                case sf::Keyboard::Numpad4:
+                    world.cells[cursor_position] = {0};
+                break;
+
+                case sf::Keyboard::Numpad5:
+                    world.cells[cursor_position] = {1};
+                break;
+            }
+        }
 }
 
 void GraphicEngine::handle_camera_events(const sf::Event& event)
