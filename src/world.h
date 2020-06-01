@@ -111,6 +111,9 @@ public:
     bool cell_defined(const sf::Vector2i& pos);
     void assert_cell_defined(const sf::Vector2i& pos);
 
+    //Cycles
+    sf::Vector2i cyclic_equivalent_pos(const sf::Vector2i& pos);
+
     ParityVector pv;
     static const sf::Vector2i CYCLIC_ORIGIN;
 

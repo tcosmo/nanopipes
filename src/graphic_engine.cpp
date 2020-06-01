@@ -29,8 +29,10 @@ GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(w
     show_cyclic_symmetries = false;
 
     current_selector_color = 0;
-    for( int i_color = 0 ; i_color < COLORED_SELECTORS_WHEEL_SIZE ; i_color += 1)
+    for( int i_color = 0 ; i_color < COLORED_SELECTORS_WHEEL_SIZE ; i_color += 1) {
         colored_selectors[COLORED_SELECTORS_WHEEL[i_color]] = Poset({});
+        colored_border[COLORED_SELECTORS_WHEEL[i_color]] = Poset({});
+    }
 }
 
 GraphicEngine::~GraphicEngine()
@@ -64,6 +66,16 @@ void GraphicEngine::colored_selectors_toggle(const sf::Vector2i& world_coord)
         colored_selectors[current_color].insert(world_coord);
     else
         colored_selectors[current_color].erase(find_iterator);
+}
+
+void GraphicEngine::colored_border_toggle(const sf::Vector2i& world_coord)
+{
+    const sf::Color& current_color = COLORED_SELECTORS_WHEEL[current_selector_color];
+    auto find_iterator = colored_border[current_color].find(world_coord);
+    if( find_iterator  == colored_border[current_color].end() )
+        colored_border[current_color].insert(world_coord);
+    else
+        colored_border[current_color].erase(find_iterator);
 }
 
 void GraphicEngine::colored_selectors_clear(const sf::Vector2i& world_coord)
@@ -141,7 +153,7 @@ void GraphicEngine::run()
                             while(world.nb_macro_iterations < abs(last_visible_cell().x))
                                 world.next_micro();
                         if(world.mode == CYCLE_MODE)
-                            while(world.nb_macro_iterations <= last_visible_cell().y)
+                            while(world.nb_macro_iterations <= abs(first_visible_cell().y))
                                 world.next_micro();
                     break;
 
@@ -154,7 +166,7 @@ void GraphicEngine::run()
                     case sf::Keyboard::A:
                         printf("Macro it: %d\n", world.nb_macro_iterations);
                         if(world.mode == CYCLE_MODE)
-                            printf("Last visible line: %d\n", last_visible_cell().y);
+                            printf("First visible line: %d\n", first_visible_cell().y);
                     break;
                 }
             }
@@ -176,6 +188,9 @@ void GraphicEngine::run()
 
         render_world();
         render_colored_selectors();
+
+        if(world.mode == CYCLE_MODE)
+            render_colored_border();
 
         window.display();
     }

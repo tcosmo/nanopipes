@@ -66,6 +66,7 @@ static const sf::Color CELLS_COLOR[4];
 // Colored selectors
 int current_selector_color;
 std::map<sf::Color, Poset, compare_colors > colored_selectors;
+std::map<sf::Color, Poset, compare_colors > colored_border;
 static const int COLORED_SELECTORS_WHEEL_SIZE;
 static const sf::Color COLORED_SELECTORS_WHEEL[];
 
@@ -93,8 +94,11 @@ void render_cursor();
 void render_world();
 void render_cell(const sf::Vector2i& cell_pos, const Cell& cell);
 void render_colored_selectors();
+void render_colored_border();
 void draw_cell_outline_fill(const sf::Vector2i& cell_position, 
                             const sf::Color& outline, const sf::Color& fill);
+void set_cell_border(const sf::Vector2i& pos, const sf::Vector2i& which, const sf::Color& color);
+
 sf::Color color_of_cell(const Cell& cell);
 
 // Coordinates conversion
@@ -108,6 +112,8 @@ void move_cursor(const sf::Vector2i& pos_delta);
 void colored_selectors_toggle(const sf::Vector2i& world_coord);
 void colored_selectors_clear(const sf::Vector2i& world_coord);
 void colored_selectors_clear_all();
+
+void colored_border_toggle(const sf::Vector2i& world_coord);
 
 };
 

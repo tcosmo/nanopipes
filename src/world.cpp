@@ -17,6 +17,25 @@ void World::set_mode(WorldMode p_mode)
     mode = p_mode;
 }
 
+sf::Vector2i World::cyclic_equivalent_pos(const sf::Vector2i& pos)
+{
+    assert(mode == CYCLE_MODE);
+
+    if(pos.x <= -1 && pos.x >= (-1)*pv.norm())
+        return pos;
+
+    bool to_the_right = pos.x > -1;
+    if( to_the_right) {
+        int cycle_rep = pos.x/pv.norm()+1;
+        return {pos.x%pv.norm()-1*pv.norm(), pos.y+cycle_rep*pv.span()};
+    } else {
+        int cycle_rep = (pos.x+1)/pv.norm();
+
+        return {-1*((abs(pos.x)-1)%pv.norm()+1), pos.y+cycle_rep*pv.span()};
+    }
+    return pos;
+}
+
 void World::set_initial_cells_line_mode(const std::string& initial_cells_input)
 {
     sf::Vector2i pos = {-1,0};

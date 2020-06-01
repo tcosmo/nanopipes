@@ -55,5 +55,7 @@ bool GraphicEngine::cell_visible(const sf::Vector2i& cell_pos)
     sf::Vector2i top_left = first_visible_cell();
     sf::Vector2f bottom_right_coords = window.mapPixelToCoords({(int)window.getSize().x,(int)window.getSize().y});
     sf::Vector2i bottom_right_pos = map_coords_to_world_coords(bottom_right_coords);
-    return cell_pos.x >= top_left.x && cell_pos.x <= bottom_right_pos.x && cell_pos.y >= top_left.y && cell_pos.y <= bottom_right_pos.y;
+
+    return cell_pos.x >= top_left.x && cell_pos.x <= bottom_right_pos.x && 
+           cell_pos.y >= top_left.y && cell_pos.y <= bottom_right_pos.y;
 }

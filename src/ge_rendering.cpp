@@ -93,35 +93,34 @@ void GraphicEngine::render_cell(const sf::Vector2i& cell_pos, const Cell& cell)
 
 void GraphicEngine::render_world()
 {
+    if(world.mode == CYCLE_MODE && show_cyclic_symmetries) {
+        sf::Vector2i pos = first_visible_cell();
+        sf::Vector2i last = last_visible_cell();
+        while(pos.y <= last.y) {
+            sf::Vector2i current_pos = pos;
+            while(cell_visible(current_pos)) {
+                sf::Vector2i cyclic_eq = world.cyclic_equivalent_pos(current_pos);
+                if( world.cell_exists(cyclic_eq) )
+                    render_cell(current_pos,world.cells[cyclic_eq]);
+                current_pos += EAST;
+            }
+            pos += SOUTH;
+        }
+
+        return;
+    }
+
+
     for( const auto& pos_and_cell : world.cells ) {
         const sf::Vector2i& cell_pos = pos_and_cell.first;
 
         // Be sparse and do not render out of sight cells
         // Particularly useful when coming from very un zoomed to very zoomed
         // SFML seems to struggle when having to render stuff far out of sight.
-        if(world.mode == LINE_MODE && cell_pos.y > last_visible_cell().y)
-            continue;
-        if(world.mode == COL_MODE && abs(cell_pos.x) > abs(last_visible_cell().x))
-            continue;
         
-        if(world.mode == CYCLE_MODE && abs(cell_pos.y) > abs(first_visible_cell().y))
-            continue;
-
         const Cell& cell = pos_and_cell.second;
-        render_cell(cell_pos, cell);
-
-        if(world.mode == CYCLE_MODE && show_cyclic_symmetries) {
-            sf::Vector2i sym_pos = cell_pos-world.pv.to_2D_vec();    
-            while(cell_visible(sym_pos)) {
-                render_cell(sym_pos,cell);
-                sym_pos -= world.pv.to_2D_vec();
-            }
-            sym_pos = cell_pos+world.pv.to_2D_vec();
-            while(cell_visible(sym_pos)) {
-                render_cell(sym_pos,cell);
-                sym_pos += world.pv.to_2D_vec();
-            }
-        }
+        if(cell_visible(cell_pos))
+            render_cell(cell_pos, cell);
     }
 }
 
@@ -130,4 +129,34 @@ void GraphicEngine::render_colored_selectors()
     for( const auto& color_pos: colored_selectors )
         for( const auto& pos: colored_selectors[color_pos.first] )
             draw_cell_outline_fill(pos, color_pos.first, sf::Color::Transparent);
+}
+
+void GraphicEngine::set_cell_border(const sf::Vector2i& pos, const sf::Vector2i& which, const sf::Color& color)
+{
+    if( which == SOUTH ) {
+        sf::RectangleShape border(sf::Vector2f({((float)CELL_W), (float)GRID_THICKNESS}));
+        border.setPosition(map_world_coords_to_coords(pos+SOUTH));
+        border.setFillColor(color);
+        window.draw(border);
+    }
+    if( which == EAST ) {
+        sf::RectangleShape border(sf::Vector2f({((float)CELL_H), (float)GRID_THICKNESS}));
+        border.setPosition(map_world_coords_to_coords(pos+EAST));
+        border.rotate(90);
+        border.setFillColor(color);
+        window.draw(border);
+    }
+}
+
+void GraphicEngine::render_colored_border()
+{
+    for( const auto& color_pos: colored_border )
+        for( const auto& pos: colored_border[color_pos.first] ) {
+            sf::Vector2i start = pos-world.pv.to_2D_vec();
+            for(auto e: world.pv.pv) {
+                set_cell_border(start, SOUTH, color_pos.first);
+                if(e) set_cell_border(start+SOUTH+WEST, EAST, color_pos.first);
+                start += PARITY_MOVES[e];
+            }
+        }
 }
