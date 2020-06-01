@@ -60,6 +60,7 @@ bool move_camera_mode;
 // Rendering modes
 bool show_grid; 
 bool cell_color_mode;
+bool show_cyclic_symmetries;
 static const sf::Color CELLS_COLOR[4];
 
 // Colored selectors
@@ -82,7 +83,9 @@ void camera_zoom(float zoom_factor);
 void camera_center(const sf::Vector2f& where);
 sf::Vector2f get_camera_view_origin();
 bool point_in_camera_view(const sf::Vector2f& point);
-sf::Vector2i last_visible_cell(); // World coordinates of the left rightmost bottom cell
+sf::Vector2i last_visible_cell(); // World coordinates of the leftmost bottom cell
+sf::Vector2i first_visible_cell(); // World coordinates of the leftmost top cell
+bool cell_visible(const sf::Vector2i& cell_pos);
 
 // Rendering
 void render_grid();

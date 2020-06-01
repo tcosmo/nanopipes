@@ -1,5 +1,7 @@
 #include "world.h"
 
+const sf::Vector2i World::CYCLIC_ORIGIN = {-1,0};
+
 World::World() 
 {
     mode = FREE;
@@ -109,6 +111,66 @@ void World::bootstrap_Collatz_line()
     line_mode_macro_iteration_one_found = std::make_pair(0,false);
 }
 
+void World::bootstrap_Collatz_cycle()
+{
+    sf::Vector2i pos = CYCLIC_ORIGIN;
+    for(bool e: pv.pv) {
+        cells[pos] = {0,int(e)};
+        if(e) cells_on_edge.push_back({pos,0});
+        pos += PARITY_MOVES[e];
+    }
+    cells[pos] = cells[CYCLIC_ORIGIN];
+    cycle_mode_last_macro_it_added = 0;
+}
+
+Cell World::deduce_backward(Cell south, Cell east)
+{
+    assert(east.status() == DEFINED && south.bit != UNDEFINED);
+    Cell to_ret = {south.bit != (east.bit+east.carry)%2,0};
+    to_ret.carry = int((to_ret.bit + east.bit + east.carry) >= 2);
+    return to_ret;
+}
+
+void World::next_micro_cycle()
+{
+    assert(!cells_on_edge.empty());
+ 
+    sf::Vector2i front_pos = cells_on_edge.front().pos;
+    int front_macro_it = cells_on_edge.front().macro_iteration;
+    
+    if( abs(front_pos.x) == pv.find_first_1()+1 ) {
+        //this way of tracking the current macro iteration depends on having
+        //the origin at {-1,0}. Not great I know.
+        assert(CYCLIC_ORIGIN == sf::Vector2i({-1,0}));
+        nb_macro_iterations += 1;
+    }
+
+    assert_cell_defined(front_pos);
+
+    if(cell_exists(front_pos+WEST+SOUTH)) {
+        //printf("%d %d %d\n", front_pos.x, front_pos.y, nb_macro_iterations);
+        assert(cell_defined(front_pos+WEST+SOUTH));// just for theory
+        cells[front_pos+WEST] = deduce_backward(cells[front_pos+WEST+SOUTH],cells[front_pos]);
+        //printf("POP FRONT %d %d\n", cells_on_edge.front().pos.x, cells_on_edge.front().pos.y);
+        cells_on_edge.pop_front();
+
+        // Deal with cyclicity
+        if(!cell_exists(front_pos+WEST+WEST+SOUTH) && cell_exists(front_pos+WEST+SOUTH-pv.to_2D_vec())) {
+            cells[front_pos+WEST-pv.to_2D_vec()] = cells[front_pos+WEST];
+            cells_on_edge.push_front({front_pos+WEST-pv.to_2D_vec(),nb_macro_iterations});
+            return;
+        }
+
+        if(cell_exists(front_pos+WEST+WEST+SOUTH)) {
+            cells_on_edge.push_front({front_pos+WEST,nb_macro_iterations});
+            //printf("PUSH FRONT %d %d\n", cells_on_edge.front().pos.x, cells_on_edge.front().pos.y);
+        } else {
+            cells_on_edge.push_back({front_pos+WEST,nb_macro_iterations});
+            //printf("PUSH BACK %d %d\n", cells_on_edge.back().pos.x, cells_on_edge.back().pos.y);
+        }
+    }
+}
+
 void World::next_micro()
 {
     if(cells_on_edge.empty())
@@ -117,6 +179,8 @@ void World::next_micro()
         next_micro_line();
     if( mode == COL_MODE )
         next_micro_col();
+    if( mode == CYCLE_MODE )
+        next_micro_cycle();
 }
 
 bool World::cell_exists(const sf::Vector2i& pos)
@@ -231,6 +295,15 @@ void World::next_micro_col()
     cells_on_edge.pop_front();
 }
 
+void World::set_parity_vector(const std::string& pv_str)
+{
+    for( auto c: pv_str ) {
+        if( c == '0' ) pv.push_back(false);
+        else if( c == '1') pv.push_back(true);
+        else { printf("Symbol `%c` is not valid in a parity vector. Abort.", c); exit(1); }
+    }
+}
+
 void World::reset() 
 {
     cells.clear();
@@ -240,11 +313,17 @@ void World::reset()
         set_initial_cells(record_initial_cells_input);
         bootstrap_Collatz();
     }
+
+    if( pv.pv.size() != 0 ) {
+        bootstrap_Collatz_cycle();
+    }
 }
 
 void World::bootstrap_Collatz() 
 {
     if(mode == LINE_MODE)
         bootstrap_Collatz_line();
+    if(mode == CYCLE_MODE)
+        bootstrap_Collatz_cycle();
     return;
 }

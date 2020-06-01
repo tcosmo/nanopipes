@@ -26,6 +26,7 @@ GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(w
     
     show_grid = true;
     cell_color_mode = false;
+    show_cyclic_symmetries = false;
 
     current_selector_color = 0;
     for( int i_color = 0 ; i_color < COLORED_SELECTORS_WHEEL_SIZE ; i_color += 1)
@@ -127,12 +128,20 @@ void GraphicEngine::run()
                         world.next_micro();
                     break;
 
+                    case sf::Keyboard::S:
+                        if(world.mode == CYCLE_MODE)
+                            show_cyclic_symmetries = !show_cyclic_symmetries;
+                    break;
+
                     case sf::Keyboard::M:
                         if(world.mode == LINE_MODE)
                             while(world.nb_macro_iterations < last_visible_cell().y)
                                 world.next_micro();
                         if(world.mode == COL_MODE)
                             while(world.nb_macro_iterations < abs(last_visible_cell().x))
+                                world.next_micro();
+                        if(world.mode == CYCLE_MODE)
+                            while(world.nb_macro_iterations <= last_visible_cell().y)
                                 world.next_micro();
                     break;
 
@@ -144,6 +153,8 @@ void GraphicEngine::run()
 
                     case sf::Keyboard::A:
                         printf("Macro it: %d\n", world.nb_macro_iterations);
+                        if(world.mode == CYCLE_MODE)
+                            printf("Last visible line: %d\n", last_visible_cell().y);
                     break;
                 }
             }

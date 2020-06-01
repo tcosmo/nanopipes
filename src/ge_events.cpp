@@ -168,7 +168,10 @@ void GraphicEngine::handle_selectors_events(const sf::Event& event)
         if( (event.mouseButton.button == sf::Mouse::Left) ) {
             sf::Vector2i cliked_cell_pos = map_coords_to_world_coords(
                         window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+            printf("%d %d\n", cliked_cell_pos.x, cliked_cell_pos.y);
             colored_selectors_toggle(cliked_cell_pos);
+            if( world.mode == CYCLE_MODE )
+                colored_selectors_toggle(cliked_cell_pos-world.pv.to_2D_vec());
         }
         if( (event.mouseButton.button == sf::Mouse::Right) ) {
             sf::Vector2i cliked_cell_pos = map_coords_to_world_coords(

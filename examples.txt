@@ -1,2 +1,11 @@
 ./nanopipes.out -line 1110011011
 ./nanopipes.out -col 1021012
+
+# Cycles
+## Positive cycles
+./nanopipes.out -cycle 010101
+./nanopipes.out -cycle 101010
+## Negative cycles
+./nanopipes.out -cycle 111111 //(-1, -1 ...)
+./nanopipes.out -cycle 110110  //(-5,  -7, -10, -5, ...)
+./nanopipes.out -cycle 11110111000 //(-17, -25, -37, -55, -82, -41, -61, -91, -136, -68, -34, -17, ...)

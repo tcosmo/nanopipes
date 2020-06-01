@@ -12,7 +12,6 @@ int main(int argc, char** argv)
     if( input_parser.cmdOptionExists("-line") ) {
         world.set_mode(LINE_MODE);
     }
-
     const std::string &mode_line_input = input_parser.getCmdOption("-line");
     if (!mode_line_input.empty()) {
         world.set_initial_cells(mode_line_input);
@@ -22,10 +21,18 @@ int main(int argc, char** argv)
     if( input_parser.cmdOptionExists("-col") ) {
         world.set_mode(COL_MODE);
     }
-
     const std::string &mode_col = input_parser.getCmdOption("-col");
     if (!mode_col.empty()) {
         world.set_initial_cells(mode_col);
+        world.bootstrap_Collatz();
+    }
+
+    if( input_parser.cmdOptionExists("-cycle") ) {
+        world.set_mode(CYCLE_MODE);
+    }
+    const std::string &parity_vector_input = input_parser.getCmdOption("-cycle");
+    if (!parity_vector_input.empty()) {
+        world.set_parity_vector(parity_vector_input);
         world.bootstrap_Collatz();
     }
 

@@ -103,9 +103,25 @@ void GraphicEngine::render_world()
             continue;
         if(world.mode == COL_MODE && abs(cell_pos.x) > abs(last_visible_cell().x))
             continue;
+        
+        if(world.mode == CYCLE_MODE && abs(cell_pos.y) > abs(first_visible_cell().y))
+            continue;
 
         const Cell& cell = pos_and_cell.second;
         render_cell(cell_pos, cell);
+
+        if(world.mode == CYCLE_MODE && show_cyclic_symmetries) {
+            sf::Vector2i sym_pos = cell_pos-world.pv.to_2D_vec();    
+            while(cell_visible(sym_pos)) {
+                render_cell(sym_pos,cell);
+                sym_pos -= world.pv.to_2D_vec();
+            }
+            sym_pos = cell_pos+world.pv.to_2D_vec();
+            while(cell_visible(sym_pos)) {
+                render_cell(sym_pos,cell);
+                sym_pos += world.pv.to_2D_vec();
+            }
+        }
     }
 }
 
