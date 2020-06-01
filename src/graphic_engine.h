@@ -114,6 +114,7 @@ void colored_selectors_clear(const sf::Vector2i& world_coord);
 void colored_selectors_clear_all();
 
 void colored_border_toggle(const sf::Vector2i& world_coord);
+void colored_border_clear_all();
 
 };
 

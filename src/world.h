@@ -113,7 +113,8 @@ public:
 
     //Cycles
     sf::Vector2i cyclic_equivalent_pos(const sf::Vector2i& pos);
-
+    std::pair<int,int> cycle_detected;
+    
     ParityVector pv;
     static const sf::Vector2i CYCLIC_ORIGIN;
 
@@ -140,6 +141,8 @@ private:
     void bootstrap_Collatz_cycle();
     void next_micro_cycle();
     Cell deduce_backward(Cell south, Cell east);
+    std::map<std::string,int> cycle_period_detection_map;
+    std::string cyclic_macro_it_to_string(int macro_it);
 };
 
 #endif

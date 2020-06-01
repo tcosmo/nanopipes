@@ -33,6 +33,7 @@ GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(w
         colored_selectors[COLORED_SELECTORS_WHEEL[i_color]] = Poset({});
         colored_border[COLORED_SELECTORS_WHEEL[i_color]] = Poset({});
     }
+
 }
 
 GraphicEngine::~GraphicEngine()
@@ -91,6 +92,12 @@ void GraphicEngine::colored_selectors_clear_all()
         color_poset.second.clear();
 }
 
+void GraphicEngine::colored_border_clear_all()
+{
+    for(auto& color_poset: colored_border )
+        color_poset.second.clear();
+}
+
 void GraphicEngine::run()
 {
     camera_zoom(3);
@@ -145,6 +152,13 @@ void GraphicEngine::run()
                             show_cyclic_symmetries = !show_cyclic_symmetries;
                     break;
 
+                    case sf::Keyboard::P:
+                        if(world.mode == CYCLE_MODE) {
+                            while(world.cycle_detected.first == -1)
+                                world.next_micro();
+                            printf("CYCLE: %d %d\n", world.cycle_detected.first, world.cycle_detected.second);
+                        }
+
                     case sf::Keyboard::M:
                         if(world.mode == LINE_MODE)
                             while(world.nb_macro_iterations < last_visible_cell().y)
@@ -161,6 +175,7 @@ void GraphicEngine::run()
                         world.reset();
                         insert_mode = world.cells_on_edge.empty();
                         colored_selectors_clear_all();
+                        colored_border_clear_all();
                     break;
 
                     case sf::Keyboard::A:
@@ -186,6 +201,7 @@ void GraphicEngine::run()
         if( insert_mode )
             render_cursor();
 
+        
         render_world();
         render_colored_selectors();
 

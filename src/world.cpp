@@ -140,6 +140,7 @@ void World::bootstrap_Collatz_cycle()
     }
     cells[pos] = cells[CYCLIC_ORIGIN];
     cycle_mode_last_macro_it_added = 0;
+    cycle_detected = std::make_pair(-1,-1);
 }
 
 Cell World::deduce_backward(Cell south, Cell east)
@@ -148,6 +149,20 @@ Cell World::deduce_backward(Cell south, Cell east)
     Cell to_ret = {south.bit != (east.bit+east.carry)%2,0};
     to_ret.carry = int((to_ret.bit + east.bit + east.carry) >= 2);
     return to_ret;
+}
+
+std::string World::cyclic_macro_it_to_string(int macro_it)
+{
+    assert(mode == CYCLE_MODE);
+    sf::Vector2i start = {CYCLIC_ORIGIN.x,-1*macro_it};
+    std::string to_return = "";
+    for( auto e: pv.pv ) {
+        assert(cell_defined(start));
+        to_return.push_back(cells[start].to_index()+'0');
+        start += PARITY_MOVES[e];
+    }
+    
+    return to_return;
 }
 
 void World::next_micro_cycle()
@@ -161,7 +176,19 @@ void World::next_micro_cycle()
         //this way of tracking the current macro iteration depends on having
         //the origin at {-1,0}. Not great I know.
         assert(CYCLIC_ORIGIN == sf::Vector2i({-1,0}));
+        
+        std::string last_level_string = cyclic_macro_it_to_string(nb_macro_iterations);
+        
+        //Cycle detected!
+        if(cycle_period_detection_map.find(last_level_string)!=cycle_period_detection_map.end())
+            cycle_detected = std::make_pair(cycle_period_detection_map[last_level_string], nb_macro_iterations);
+        else
+            cycle_period_detection_map[last_level_string] = nb_macro_iterations;
+
+
+        printf("%s\n", cyclic_macro_it_to_string(nb_macro_iterations).c_str());
         nb_macro_iterations += 1;
+
     }
 
     assert_cell_defined(front_pos);
@@ -327,6 +354,8 @@ void World::reset()
 {
     cells.clear();
     cells_on_edge.clear();
+    cycle_period_detection_map.clear();
+    cycle_detected = std::make_pair(-1,-1);
     nb_macro_iterations = 0;
     if( record_initial_cells_input.size() != 0 ) {
         set_initial_cells(record_initial_cells_input);
