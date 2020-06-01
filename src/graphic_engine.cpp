@@ -158,6 +158,7 @@ void GraphicEngine::run()
                                 world.next_micro();
                             printf("CYCLE: %d %d\n", world.cycle_detected.first, world.cycle_detected.second);
                         }
+                    break;
 
                     case sf::Keyboard::M:
                         if(world.mode == LINE_MODE)
