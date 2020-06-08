@@ -1,6 +1,7 @@
 #ifndef DEF_WORLD_H
 #define DEF_WORLD_H
 
+#include <math.h>
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -81,6 +82,11 @@ struct ParityVector {
         return to_return;
     }
 
+    bool can_cycle()
+    {
+        return (pow(2,norm()) > pow(3,span())) && (span() >= (norm()-span()));
+    }
+
     bool operator[](std::size_t idx)  { return pv[idx]; }
     const bool operator[](std::size_t idx) const { return pv[idx]; }
 
@@ -114,9 +120,10 @@ public:
     //Cycles
     sf::Vector2i cyclic_equivalent_pos(const sf::Vector2i& pos);
     std::pair<int,int> cycle_detected;
-    
+
     ParityVector pv;
     static const sf::Vector2i CYCLIC_ORIGIN;
+    void rotate_pv(int r);
 
     void next_micro(); // next micro iteration
     int nb_macro_iterations;

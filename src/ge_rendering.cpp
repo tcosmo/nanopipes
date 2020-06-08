@@ -19,6 +19,11 @@ void GraphicEngine::render_cursor()
     draw_cell_outline_fill(cursor_position, cursor_color, sf::Color::Transparent);
 }
 
+void GraphicEngine::render_front_edge()
+{
+    draw_cell_outline_fill(world.cells_on_edge.front().pos, sf::Color::Magenta, sf::Color::Transparent);
+}
+
 void GraphicEngine::render_grid()
 {    
     auto view_origin = get_camera_view_origin();
@@ -49,7 +54,8 @@ void GraphicEngine::render_grid()
 sf::Color GraphicEngine::color_of_cell(const Cell& cell)
 {
     assert(cell.status() == DEFINED);
-    return GraphicEngine::CELLS_COLOR[cell.to_index()];
+    int index = (!inverse_color) ? cell.to_index() : 3-cell.to_index();
+    return GraphicEngine::CELLS_COLOR[index];
 }
 
 void GraphicEngine::render_cell(const sf::Vector2i& cell_pos, const Cell& cell)

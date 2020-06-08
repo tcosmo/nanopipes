@@ -26,6 +26,7 @@ GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(w
     
     show_grid = true;
     cell_color_mode = false;
+    inverse_color = false;
     show_cyclic_symmetries = false;
 
     current_selector_color = 0;
@@ -103,6 +104,8 @@ void GraphicEngine::run()
     camera_zoom(3);
     camera_center({-5*CELL_W,0});
 
+    int n_it; // For rotations, cant be defined in switch
+
     while(window.isOpen())
     {
         sf::Event event;
@@ -135,6 +138,10 @@ void GraphicEngine::run()
 
                     case sf::Keyboard::K:
                         cell_color_mode = !cell_color_mode;
+                    break;
+
+                    case sf::Keyboard::W:
+                        inverse_color = !inverse_color;
                     break;
 
                     case sf::Keyboard::B:
@@ -172,6 +179,24 @@ void GraphicEngine::run()
                                 world.next_micro();
                     break;
 
+                    case sf::Keyboard::I:
+                        if(world.mode == CYCLE_MODE) {
+                            n_it = world.nb_macro_iterations;
+                            world.rotate_pv(1);
+                            while(world.nb_macro_iterations != n_it)
+                                world.next_micro();
+                        }
+                    break;
+
+                    case sf::Keyboard::O:
+                        if(world.mode == CYCLE_MODE) {
+                            n_it = world.nb_macro_iterations;
+                            world.rotate_pv(-1);
+                            while(world.nb_macro_iterations != n_it)
+                                world.next_micro();
+                        }
+                    break;
+
                     case sf::Keyboard::R:
                         world.reset();
                         insert_mode = world.cells_on_edge.empty();
@@ -181,8 +206,10 @@ void GraphicEngine::run()
 
                     case sf::Keyboard::A:
                         printf("Macro it: %d\n", world.nb_macro_iterations);
-                        if(world.mode == CYCLE_MODE)
+                        if(world.mode == CYCLE_MODE) {
                             printf("First visible line: %d\n", first_visible_cell().y);
+                            printf("Can cycle: %d\n", world.pv.can_cycle());
+                        }
                     break;
                 }
             }
@@ -205,6 +232,10 @@ void GraphicEngine::run()
         
         render_world();
         render_colored_selectors();
+        
+        // To visualise which cell is on the front of the edge of the
+        // constructed world, useful for debug.
+        //render_front_edge();
 
         if(world.mode == CYCLE_MODE)
             render_colored_border();

@@ -134,7 +134,7 @@ void World::bootstrap_Collatz_cycle()
 {
     sf::Vector2i pos = CYCLIC_ORIGIN;
     for(bool e: pv.pv) {
-        cells[pos] = {0,int(e)};
+        cells[pos] = {0,int(e),int(e)};
         if(e) cells_on_edge.push_back({pos,0});
         pos += PARITY_MOVES[e];
     }
@@ -314,8 +314,9 @@ void World::next_micro_col()
     sf::Vector2i front_pos = cells_on_edge.front().pos;
     int front_macro_it = cells_on_edge.front().macro_iteration;
     nb_macro_iterations = front_macro_it;
-
+    
     assert(!cell_exists(front_pos+WEST+SOUTH));
+
     cells[front_pos+WEST+SOUTH] = {0};
 
     if(!cell_exists(front_pos+WEST))
@@ -329,13 +330,19 @@ void World::next_micro_col()
         col_mode_last_macro_it_added = front_macro_it+1;
     }
 
-    if(!cell_exists(front_pos+SOUTH) || (!cell_exists(front_pos+SOUTH+SOUTH) && cells[front_pos+SOUTH].bit == 0)) {
+    if(!cell_exists(front_pos+SOUTH) || cells[front_pos+SOUTH].status() != DEFINED ) {
         if(cells[front_pos+WEST+SOUTH].bit == 1) {
             cells[front_pos+SOUTH] = {0,1,true};
+            sf::Vector2i pos_correct = front_pos+SOUTH+EAST;
+            while(cell_exists(pos_correct)) {
+                cells[pos_correct].carry = 0;
+                pos_correct += EAST;
+            }
+
             cells[front_pos+WEST+SOUTH].carry = 1;
-            cells[front_pos+WEST+SOUTH+SOUTH] = {0,0};
+            cells[front_pos+WEST+SOUTH+SOUTH] = {0}; // To have the right amount of 0s
             cells_on_edge.push_back({front_pos+WEST+SOUTH,front_macro_it+1});
-        } else cells[front_pos+WEST+SOUTH].carry = 0;
+        } 
     }
 
     cells_on_edge.pop_front();
@@ -349,6 +356,16 @@ void World::set_parity_vector(const std::string& pv_str)
         else { printf("Symbol `%c` is not valid in a parity vector. Abort.", c); exit(1); }
     }
 }
+
+void World::rotate_pv(int r)
+{
+    assert(mode == CYCLE_MODE);
+    ParityVector new_pv;
+    for( int i = 0 ; i < pv.pv.size() ; i += 1 )
+        new_pv.push_back(pv[(pv.norm()+i+r)%(pv.norm())]);
+    pv = new_pv;
+    reset();
+}       
 
 void World::reset() 
 {

@@ -60,6 +60,7 @@ bool move_camera_mode;
 // Rendering modes
 bool show_grid; 
 bool cell_color_mode;
+bool inverse_color;
 bool show_cyclic_symmetries;
 static const sf::Color CELLS_COLOR[4];
 
@@ -93,6 +94,7 @@ void render_grid();
 void render_cursor();
 void render_world();
 void render_cell(const sf::Vector2i& cell_pos, const Cell& cell);
+void render_front_edge();
 void render_colored_selectors();
 void render_colored_border();
 void draw_cell_outline_fill(const sf::Vector2i& cell_position, 
