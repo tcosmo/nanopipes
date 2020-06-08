@@ -207,8 +207,15 @@ void GraphicEngine::run()
                     case sf::Keyboard::A:
                         printf("Macro it: %d\n", world.nb_macro_iterations);
                         if(world.mode == CYCLE_MODE) {
-                            printf("First visible line: %d\n", first_visible_cell().y);
-                            printf("Can cycle: %d\n", world.pv.can_cycle());
+                            printf("\nCYCLE INFO \n===========\n");
+                            printf("Parity vector: %s\n", world.pv.to_str().c_str());
+                            printf("Can positive cycle: %d\n", world.pv.can_positive_cycle());
+                            if( world.cycle_detected.first != -1 ) {
+                                printf("\n");
+                                std::pair<std::string, std::string> initial_segment_period = world.get_cycle_expansion();
+                                printf("Initial segment: %s\n", initial_segment_period.first.c_str());
+                                printf("Period: %s\n", initial_segment_period.second.c_str());
+                            }
                         }
                     break;
                 }

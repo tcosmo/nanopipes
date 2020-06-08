@@ -9,44 +9,71 @@
 
 #include "global.h"
 
-enum WorldMode {
+enum WorldMode 
+{
     FREE = 0,
     LINE_MODE,
     COL_MODE,
     CYCLE_MODE
 };
 
-enum CellStatus {
+enum CellStatus 
+{
     UNDEFINED = -1,
     BIT_DEFINED,
     CARRY_DEFINED,
     DEFINED
 };
 
-struct Cell {
+struct Cell 
+{
     int bit, carry;
     bool special_carry;
     Cell(int bit = UNDEFINED, int carry = UNDEFINED, bool special_carry = false) : 
     bit(bit), carry(carry), special_carry(special_carry) {};
-    CellStatus status() const { 
+    
+    CellStatus status() const 
+    { 
         if( bit == UNDEFINED && carry == UNDEFINED ) return UNDEFINED;
         if( bit == UNDEFINED ) return CARRY_DEFINED;
         if( carry == UNDEFINED ) return BIT_DEFINED;
         return DEFINED;
     }
-    int to_index() const {
+
+    int to_index() const 
+    {
         return 2*bit + carry;
+    }
+
+    int sum() const
+    {
+        return bit+carry;
+    }
+
+    char to_trit() const
+    {
+        assert(status() == DEFINED);
+        int answer = sum();
+        return '0'+answer;
+    }
+
+    char to_bit() const
+    {
+        assert(bit == DEFINED);
+        return '0'+bit;
     }
 };
 
-struct MicroIteration {
+struct MicroIteration 
+{
     sf::Vector2i pos;
     int macro_iteration;
 };
 
 static sf::Vector2i PARITY_MOVES[2] = {WEST, SOUTH+WEST};
 
-struct ParityVector {
+struct ParityVector 
+{
     std::vector<bool> pv;
     sf::Vector2i _vec_2D;
     int _first_one;
@@ -82,7 +109,14 @@ struct ParityVector {
         return to_return;
     }
 
-    bool can_cycle()
+    std::string to_str()
+    {
+        std::string to_ret = "";
+        for( auto e: pv ) to_ret.push_back('0'+e);
+        return to_ret;
+    }
+
+    bool can_positive_cycle()
     {
         return (pow(2,norm()) > pow(3,span())) && (span() >= (norm()-span()));
     }
@@ -94,7 +128,8 @@ struct ParityVector {
     void push_back(bool e) { pv.push_back(e); }
 };
 
-class World {
+class World 
+{
 
 public:
     World();
@@ -120,6 +155,7 @@ public:
     //Cycles
     sf::Vector2i cyclic_equivalent_pos(const sf::Vector2i& pos);
     std::pair<int,int> cycle_detected;
+    std::pair<std::string,std::string> get_cycle_expansion();
 
     ParityVector pv;
     static const sf::Vector2i CYCLIC_ORIGIN;
@@ -131,6 +167,10 @@ public:
     static std::vector<int> base3_to_3p(std::string base3);
 private:
     std::string record_initial_cells_input;
+
+    // Fundamental deduction rules
+    int deduce_south_bit(Cell me, Cell east);
+    int deduce_me_carry(Cell me, Cell east);
 
     // Iterate line mode
     std::pair<int,bool> line_mode_macro_iteration_one_found;
