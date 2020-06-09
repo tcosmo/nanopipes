@@ -165,6 +165,10 @@ void GraphicEngine::run()
                                 world.next_micro();
                             printf("CYCLE: %d %d\n", world.cycle_detected.first, world.cycle_detected.second);
                         }
+                        if(world.mode == BORDER_MODE) {
+                            while(!world.cells_on_edge.empty())
+                                world.next_micro();
+                        }
                     break;
 
                     case sf::Keyboard::M:

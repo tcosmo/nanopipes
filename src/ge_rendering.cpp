@@ -21,7 +21,8 @@ void GraphicEngine::render_cursor()
 
 void GraphicEngine::render_front_edge()
 {
-    draw_cell_outline_fill(world.cells_on_edge.front().pos, sf::Color::Magenta, sf::Color::Transparent);
+    if(!world.cells_on_edge.empty())
+        draw_cell_outline_fill(world.cells_on_edge.front().pos, sf::Color::Magenta, sf::Color::Transparent);
 }
 
 void GraphicEngine::render_grid()

@@ -36,6 +36,15 @@ int main(int argc, char** argv)
         world.bootstrap_Collatz();
     }
 
+    if( input_parser.cmdOptionExists("-border") ) {
+        world.set_mode(BORDER_MODE);
+    }
+    const std::string &parity_vector_input_border = input_parser.getCmdOption("-border");
+    if (!parity_vector_input_border.empty()) {
+        world.set_parity_vector(parity_vector_input_border);
+        world.bootstrap_Collatz();
+    }
+
     GraphicEngine engine(world, 800*1.5,600*1.5);
     engine.run();
 }

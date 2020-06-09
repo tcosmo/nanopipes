@@ -14,7 +14,8 @@ enum WorldMode
     FREE = 0,
     LINE_MODE,
     COL_MODE,
-    CYCLE_MODE
+    CYCLE_MODE,
+    BORDER_MODE
 };
 
 enum CellStatus 
@@ -159,6 +160,7 @@ public:
 
     ParityVector pv;
     static const sf::Vector2i CYCLIC_ORIGIN;
+    static const sf::Vector2i BORDER_ORIGIN;
     void rotate_pv(int r);
 
     void next_micro(); // next micro iteration
@@ -190,6 +192,10 @@ private:
     Cell deduce_backward(Cell south, Cell east);
     std::map<std::string,int> cycle_period_detection_map;
     std::string cyclic_macro_it_to_string(int macro_it);
+
+    //Iterate border mode
+    void bootstrap_Collatz_border();
+    void next_micro_border();
 };
 
 #endif

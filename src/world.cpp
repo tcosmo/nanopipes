@@ -1,6 +1,7 @@
 #include "world.h"
 
-const sf::Vector2i World::CYCLIC_ORIGIN = {-1,0};
+const sf::Vector2i World::CYCLIC_ORIGIN = {-1,0}; // For cycle mode
+const sf::Vector2i World::BORDER_ORIGIN = {-1,0}; // For border mode
 
 World::World() 
 {
@@ -83,6 +84,8 @@ void World::next_micro()
         next_micro_col();
     if( mode == CYCLE_MODE )
         next_micro_cycle();
+    if( mode == BORDER_MODE )
+        next_micro_border();
 }
 
 bool World::cell_exists(const sf::Vector2i& pos)
@@ -119,6 +122,7 @@ int World::deduce_me_carry(Cell me, Cell east)
 
 void World::set_parity_vector(const std::string& pv_str)
 {
+    assert(mode == CYCLE_MODE || mode == BORDER_MODE);
     for( auto c: pv_str ) {
         if( c == '0' ) pv.push_back(false);
         else if( c == '1') pv.push_back(true);
@@ -128,7 +132,7 @@ void World::set_parity_vector(const std::string& pv_str)
 
 void World::rotate_pv(int r)
 {
-    assert(mode == CYCLE_MODE);
+    assert(mode == CYCLE_MODE || mode == BORDER_MODE);
     ParityVector new_pv;
     for( int i = 0 ; i < pv.pv.size() ; i += 1 )
         new_pv.push_back(pv[(pv.norm()+i+r)%(pv.norm())]);
@@ -145,19 +149,19 @@ void World::reset()
     nb_macro_iterations = 0;
     if( record_initial_cells_input.size() != 0 ) {
         set_initial_cells(record_initial_cells_input);
-        bootstrap_Collatz();
     }
 
-    if( pv.pv.size() != 0 ) {
-        bootstrap_Collatz_cycle();
-    }
+    bootstrap_Collatz();
 }
 
 void World::bootstrap_Collatz() 
 {
     if(mode == LINE_MODE)
         bootstrap_Collatz_line();
+    // No bootstraping needed in COL_MODE, already done at set init cells.
     if(mode == CYCLE_MODE)
         bootstrap_Collatz_cycle();
+    if(mode == BORDER_MODE)
+        bootstrap_Collatz_border();
     return;
 }
