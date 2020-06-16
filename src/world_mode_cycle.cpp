@@ -4,7 +4,7 @@ void World::bootstrap_Collatz_cycle()
 {
     sf::Vector2i pos = CYCLIC_ORIGIN;
     for(bool e: pv.pv) {
-        cells[pos] = {0,int(e),int(e)};
+        cells[pos] = {0,e,e};
         if(e) cells_on_edge.push_back({pos,0});
         pos += PARITY_MOVES[e];
     }
