@@ -12,6 +12,7 @@ const sf::Color GraphicEngine::COLORED_SELECTORS_WHEEL[GraphicEngine::COLORED_SE
 GraphicEngine::GraphicEngine(World& world, int screen_w, int screen_h) : world(world)
 {
     window.create(sf::VideoMode(screen_w, screen_h), PROG_NAME);
+    window.setFramerateLimit(60);
     assert(default_font.loadFromFile("arial.ttf"));
 
     camera = window.getDefaultView();
@@ -105,7 +106,7 @@ void GraphicEngine::run()
     camera_center({-5*CELL_W,0});
 
     int n_it; // For rotations, cant be defined in switch
-
+    sf::Clock clock;
     while(window.isOpen())
     {
         sf::Event event;
@@ -209,6 +210,8 @@ void GraphicEngine::run()
                     break;
 
                     case sf::Keyboard::A:
+                        printf("FPS: %lf\n", 1/clock.getElapsedTime().asSeconds());
+                        printf("Nb cells: %ld\n", world.cells.size());
                         printf("Macro it: %d\n", world.nb_macro_iterations);
                         if(world.mode == CYCLE_MODE) {
                             printf("\nCYCLE INFO \n===========\n");
@@ -252,5 +255,6 @@ void GraphicEngine::run()
             render_colored_border();
 
         window.display();
+        clock.restart();
     }
 }
