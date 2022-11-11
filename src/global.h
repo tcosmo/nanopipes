@@ -9,6 +9,11 @@
 #define OS_PATH_SEPARATOR "/"
 #endif
 
+#ifdef __APPLE__
+#define OS_PATH_SEPARATOR "/"
+#endif
+
+
 #define PROG_NAME "Nanopipes"
 
 #include <set>

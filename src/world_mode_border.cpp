@@ -4,7 +4,7 @@ void World::bootstrap_Collatz_border()
 {
     sf::Vector2i pos = BORDER_ORIGIN;
     for(bool e: pv.pv) {
-        cells[pos] = {0,int(e),int(e)};
+        cells[pos] = {0,e,e};
         if(e && cells_on_edge.empty()) cells_on_edge.push_back({pos+WEST,0});
         pos += PARITY_MOVES[e];
     }
